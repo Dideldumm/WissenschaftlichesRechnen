@@ -6,44 +6,39 @@ import numpy as np
 
 def compute_variance_1(data: np.ndarray) -> np.float64:
     """
-      Compute variance of given data array using basic 2-pass algorithm
+    Compute variance of given data array using basic 2-pass algorithm
 
-      Exceptions: ValueError when data is not 1-dimensional;
+    Exceptions: ValueError when data is not 1-dimensional;
 
-      return : variance
+    return : variance
     """
-
-    var = data.dtype.type(0.)
-
-    # TODO
-
-    return var
+    n = len(data)
+    expectation = __compute_expectation(data)
+    variance = sum([pow(x - expectation, 2) for x in data]) / n
+    return variance
 
 
 def compute_variance_2(data: np.ndarray) -> np.float64:
     """
-      Compute variance of given data array using 1-pass algorithm
+    Compute variance of given data array using 1-pass algorithm
 
-      Exceptions: ValueError when data is not 1-dimensional;
+    Exceptions: ValueError when data is not 1-dimensional;
 
-      return : variance
+    return : variance
     """
-
-    var = data.dtype.type(0.)
-
-    # TODO
-
-    return var
+    n = len(data)
+    variance = sum([pow(x - __compute_expectation(data), 2) for x in data]) / n
+    return variance
 
 
 def compute_variance_2_kahan(data: np.ndarray) -> np.float64:
     """
-      Compute variance of given data array using 1-pass algorithm and Kahan's algorithm for
-      the summation
+    Compute variance of given data array using 1-pass algorithm and Kahan's algorithm for
+    the summation
 
-      Exceptions: ValueError when data is not 1-dimensional;
+    Exceptions: ValueError when data is not 1-dimensional;
 
-      return : variance
+    return : variance
     """
 
     var = data.dtype.type(0.)
@@ -58,7 +53,7 @@ def load_temperature_data(filename: str) -> np.ndarray:
     Load temperature data from given file name
 
     return : data (as double precision np.array)
-  """
+    """
 
     num_lats = 5
 
@@ -75,7 +70,7 @@ def compute_variances() -> np.ndarray:
     for different latitudes.
 
     return : variances for different algorithms (rows) and different latitudes (columns)
-  """
+    """
 
     vars = np.zeros((3, 5))
 
@@ -89,7 +84,7 @@ def compute_rel_errs() -> np.ndarray:
     Compute relative errors for variances obtained in compute_variances()
 
     return : relative errors for different algorithms (rows) and different latitudes (columns)
-  """
+    """
 
     # TODO
 
@@ -101,7 +96,7 @@ def compute_mean_temperatures_yearly() -> np.ndarray:
     Compute mean temperature of data per latitude
 
     return: yearly mean temperatures for different latitudes (rows) and years (columns)
-  """
+    """
 
     num_lats = 5
     num_years = 30
@@ -109,6 +104,16 @@ def compute_mean_temperatures_yearly() -> np.ndarray:
     mean_temps = np.zeros((num_lats, num_years))
 
     return mean_temps
+
+
+def __compute_expectation(data: np.ndarray) -> np.float64:
+    """
+    Compute expectation of data
+    """
+    expectation = data.dtype.type(0.)
+    for x in data:
+        expectation += x
+    return expectation
 
 # main
 # if __name__ == '__main__':
