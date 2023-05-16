@@ -40,12 +40,21 @@ def compute_variance_2_kahan(data: np.ndarray) -> np.float64:
 
     return : variance
     """
+    n = len(data)
+    expectation = __compute_expectation(data)
+    variance = np.divide(__add_kahan(np.array([pow(x - expectation, 2) for x in data])), n)
+    return variance
 
-    var = data.dtype.type(0.)
 
-    # TODO
-
-    return var
+def __add_kahan(data: np.ndarray) -> np.float64:
+    s = data[0]
+    c = 0
+    for xj in data[1:]:
+        y = xj - c
+        t = s + y
+        c = (t - s) - y
+        s = t
+    return s
 
 
 def load_temperature_data(filename: str) -> np.ndarray:
@@ -55,10 +64,7 @@ def load_temperature_data(filename: str) -> np.ndarray:
     return : data (as double precision np.array)
     """
 
-    num_lats = 5
-
-    data = np.zeros((num_lats, num_lats))
-    np.fromfile(filename, dtype=float, like=data)
+    data = np.fromfile(filename, dtype=float)
 
     return data
 
@@ -109,11 +115,17 @@ def __compute_expectation(data: np.ndarray) -> np.float64:
     """
     Compute expectation of data
     """
-    expectation = data.dtype.type(0.)
-    for x in data:
-        expectation += x
+    expectation = np.divide(__add_kahan(np.array([x for x in data])), len(data))
     return expectation
 
-# main
-# if __name__ == '__main__':
-# use for development
+
+def main():
+    data = load_temperature_data("./temperature_locs.dat")
+    print(data)
+    print(compute_variance_1(data))
+    print(compute_variance_2(data))
+    print(compute_variance_2_kahan(data))
+
+
+if __name__ == '__main__':
+    main()
