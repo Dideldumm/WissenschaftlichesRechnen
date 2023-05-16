@@ -58,8 +58,7 @@ def load_temperature_data(filename: str) -> np.ndarray:
     num_lats = 5
 
     data = np.zeros((num_lats, num_lats))
-
-    # TODO
+    np.fromfile(filename, dtype=float, like=data)
 
     return data
 
