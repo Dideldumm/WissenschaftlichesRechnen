@@ -124,7 +124,7 @@ def compute_mean_temperatures_yearly(data_split: np.ndarray) -> np.ndarray:
         lat = data_split[i]
         yearly_split = np.array_split(lat, num_years)
         for j in range(num_years):
-            mean_temps[i, j] = compute_variance_1(yearly_split[j])
+            mean_temps[i, j] = np.mean(yearly_split[j])
 
     return mean_temps
 
