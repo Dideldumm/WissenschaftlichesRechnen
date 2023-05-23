@@ -27,8 +27,12 @@ def compute_variance_2(data: np.ndarray) -> np.float64:
     return : variance
     """
     n = len(data)
-    variance = sum([pow(x - __compute_expectation(data), 2) for x in data]) / n
-    return variance
+    minuend = 0
+    subtrahend = 0
+    for xi in data:
+        minuend += np.square(xi)
+        subtrahend += xi
+    return np.divide(minuend - np.divide(np.square(subtrahend), n), n)
 
 
 def compute_variance_2_kahan(data: np.ndarray) -> np.float64:
@@ -41,20 +45,24 @@ def compute_variance_2_kahan(data: np.ndarray) -> np.float64:
     return : variance
     """
     n = len(data)
-    expectation = __compute_expectation(data)
-    variance = np.divide(__add_kahan(np.array([pow(x - expectation, 2) for x in data])), n)
-    return variance
+    minuend = np.square(data[0])
+    c_m = 0
+    subtrahend = data[0]
+    c_s = 0
+    for x in data[1:]:
+        x_m = np.square(x)
+        y_m = x_m - c_m
+        t_m = minuend + y_m
+        c_m = (t_m - minuend) - y_m
+        minuend = t_m
 
+        x_s = x
+        y_s = x_s - c_s
+        t_s = subtrahend + y_s
+        c_s = (t_s - subtrahend) - y_s
+        subtrahend = t_s
 
-def __add_kahan(data: np.ndarray) -> np.float64:
-    s = data[0]
-    c = 0
-    for xj in data[1:]:
-        y = xj - c
-        t = s + y
-        c = (t - s) - y
-        s = t
-    return s
+    return np.divide(minuend - np.divide(np.square(subtrahend), n), n)
 
 
 def load_temperature_data(filename: str) -> np.ndarray:
@@ -69,7 +77,7 @@ def load_temperature_data(filename: str) -> np.ndarray:
     return data
 
 
-def compute_variances() -> np.ndarray:
+def compute_variances(data_split: np.ndarray) -> np.ndarray:
     """
     Compute variances with compute_variance_1(), compute_variance_2(), compute_variance_2_Kahan()
     for different latitudes.
@@ -79,7 +87,11 @@ def compute_variances() -> np.ndarray:
 
     vars = np.zeros((3, 5))
 
-    # TODO
+    # first: variance1
+    for j in range(5):
+        vars[0, j] = compute_variance_1(data_split[j])
+        vars[1, j] = compute_variance_2(data_split[j])
+        vars[2, j] = compute_variance_2_kahan(data_split[j])
 
     return vars
 
@@ -115,16 +127,13 @@ def __compute_expectation(data: np.ndarray) -> np.float64:
     """
     Compute expectation of data
     """
-    expectation = np.divide(__add_kahan(np.array([x for x in data])), len(data))
+    expectation = np.divide(sum(np.array([x for x in data])), len(data))
     return expectation
 
 
 def main():
     data = load_temperature_data("./temperature_locs.dat")
-    print(data)
-    print(compute_variance_1(data))
-    print(compute_variance_2(data))
-    print(compute_variance_2_kahan(data))
+    data_split = np.array_split(data, len(data) / 5)
 
 
 if __name__ == '__main__':
