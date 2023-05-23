@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 def compute_variance_1(data: np.ndarray) -> np.float64:
@@ -13,8 +14,8 @@ def compute_variance_1(data: np.ndarray) -> np.float64:
     return : variance
     """
     n = len(data)
-    expectation = __compute_expectation(data)
-    variance = sum([pow(x - expectation, 2) for x in data]) / n
+    expectation = sum(data) / n
+    variance = sum([np.square(x - expectation) for x in data]) / n
     return variance
 
 
@@ -71,9 +72,7 @@ def load_temperature_data(filename: str) -> np.ndarray:
 
     return : data (as double precision np.array)
     """
-
     data = np.fromfile(filename, dtype=float)
-
     return data
 
 
@@ -96,19 +95,22 @@ def compute_variances(data_split: np.ndarray) -> np.ndarray:
     return vars
 
 
-def compute_rel_errs() -> np.ndarray:
+def compute_rel_errs(data_split: np.ndarray) -> np.ndarray:
     """
     Compute relative errors for variances obtained in compute_variances()
 
     return : relative errors for different algorithms (rows) and different latitudes (columns)
     """
+    errs = np.zeros((3, 5))
+    for splice in range(5):
+        ref_j = data_split[splice].var()
+        errs[0, splice] = abs(compute_variance_1(data_split[splice]) - ref_j) / ref_j
+        errs[1, splice] = abs(compute_variance_2(data_split[splice]) - ref_j) / ref_j
+        errs[2, splice] = abs(compute_variance_2_kahan(data_split[splice]) - ref_j) / ref_j
+    return errs
 
-    # TODO
 
-    return np.array([1., 1., 1.])
-
-
-def compute_mean_temperatures_yearly() -> np.ndarray:
+def compute_mean_temperatures_yearly(data_split: np.ndarray) -> np.ndarray:
     """
     Compute mean temperature of data per latitude
 
@@ -117,23 +119,30 @@ def compute_mean_temperatures_yearly() -> np.ndarray:
 
     num_lats = 5
     num_years = 30
-
     mean_temps = np.zeros((num_lats, num_years))
+    for i in range(num_lats):
+        lat = data_split[i]
+        yearly_split = np.array_split(lat, num_years)
+        for j in range(num_years):
+            mean_temps[i, j] = compute_variance_1(yearly_split[j])
 
     return mean_temps
 
 
-def __compute_expectation(data: np.ndarray) -> np.float64:
-    """
-    Compute expectation of data
-    """
-    expectation = np.divide(sum(np.array([x for x in data])), len(data))
-    return expectation
+def plot(ys: np.ndarray) -> ():
+    li = list(zip(range(len(ys)), ys))
+    plt.scatter(*zip(*li))
+    plt.show()
 
 
 def main():
     data = load_temperature_data("./temperature_locs.dat")
-    data_split = np.array_split(data, len(data) / 5)
+    data_split = np.array_split(data, 5)
+    print(compute_variances(data_split))
+    print(compute_rel_errs(data_split))
+    yearly_means = compute_mean_temperatures_yearly(data_split)
+    for lat in yearly_means:
+        plot(lat)
 
 
 if __name__ == '__main__':
