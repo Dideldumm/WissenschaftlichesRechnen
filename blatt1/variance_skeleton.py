@@ -3,6 +3,7 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+import time
 
 
 def compute_variance_1(data: np.ndarray) -> np.float64:
@@ -14,8 +15,8 @@ def compute_variance_1(data: np.ndarray) -> np.float64:
     return : variance
     """
     n = len(data)
-    expectation = sum(data) / n
-    variance = sum([np.square(x - expectation) for x in data]) / n
+    expectation = np.sum(data) / n
+    variance = np.sum([np.square(x - expectation) for x in data]) / n
     return variance
 
 
@@ -84,15 +85,31 @@ def compute_variances(data_split: np.ndarray) -> np.ndarray:
     return : variances for different algorithms (rows) and different latitudes (columns)
     """
 
-    vars = np.zeros((3, 5))
+    variances = np.zeros((3, 5))
 
-    # first: variance1
     for j in range(5):
-        vars[0, j] = compute_variance_1(data_split[j])
-        vars[1, j] = compute_variance_2(data_split[j])
-        vars[2, j] = compute_variance_2_kahan(data_split[j])
+        start = time.time()
+        variances[0, j] = compute_variance_1(data_split[j])
+        end = time.time()
+        print("Time of variance1: " + str(end - start))
 
-    return vars
+        start = time.time()
+        variances[1, j] = compute_variance_2(data_split[j])
+        end = time.time()
+        print("Time of variance2: " + str(end - start))
+
+        start = time.time()
+        variances[2, j] = compute_variance_2_kahan(data_split[j])
+        end = time.time()
+        print("Time of variance2_kahan: " + str(end - start))
+
+        start = time.time()
+        np.var(data_split[j])
+        end = time.time()
+        print("Time of np.var: " + str(end - start))
+        print()
+
+    return variances
 
 
 def compute_rel_errs(data_split: np.ndarray) -> np.ndarray:
@@ -139,6 +156,7 @@ def main():
     data = load_temperature_data("./temperature_locs.dat")
     data_split = np.array_split(data, 5)
     print(compute_variances(data_split))
+    print()
     print(compute_rel_errs(data_split))
     yearly_means = compute_mean_temperatures_yearly(data_split)
     for lat in yearly_means:
