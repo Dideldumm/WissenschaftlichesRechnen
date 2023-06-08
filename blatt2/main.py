@@ -32,10 +32,10 @@ def gaussian_elimination(A: np.ndarray, b: np.ndarray, use_pivoting: bool = True
     b: np.ndarray = b.copy()
 
     # Test if shape of matrix and vector is compatible and raise ValueError if not
-    m, n = A.shape
-    l, = b.shape
-    if not m == n == l:
+    if not __is_matrix_compatible_to_vector(A, b):
         raise ValueError
+
+    m, _ = A.shape
 
     # Perform gaussian elimination
     for i in range(m):
@@ -45,7 +45,7 @@ def gaussian_elimination(A: np.ndarray, b: np.ndarray, use_pivoting: bool = True
             b[[i, max_row]] = b[[max_row, i]]
             # https://stackoverflow.com/questions/54069863/swap-two-rows-in-a-numpy-array-in-python
 
-        for j in range(i+1, m):
+        for j in range(i + 1, m):
             if A[i, i] == 0:
                 raise ValueError
             f = A[j, i] / A[i, i]
@@ -76,14 +76,25 @@ def back_substitution(A: np.ndarray, b: np.ndarray) -> np.ndarray:
     - numpy.linalg.*
     """
 
-    # TODO: Test if shape of matrix and vector is compatible and raise ValueError if not
+    # Test if shape of matrix and vector is compatible and raise ValueError if not
+    if not __is_matrix_compatible_to_vector(A, b):
+        raise ValueError
 
-    # TODO: Initialize solution vector with proper size
-    x = np.zeros(1)
+    # Initialize solution vector with proper size
+    m, _ = A.shape
+    x = np.zeros(m)
 
-    # TODO: Run backsubstitution and fill solution vector, raise ValueError if no/infinite solutions exist
+    # Run backsubstitution and fill solution vector, raise ValueError if no/infinite solutions exist
+    for i in range(m - 1, -1, -1):
+        x[i] = (b[i] - np.dot(A[i, (i + 1):], x[(i + 1):])) / A[i, i]
 
     return x
+
+
+def __is_matrix_compatible_to_vector(A: np.ndarray, b: np.ndarray) -> bool:
+    m, n = A.shape
+    l, = b.shape
+    return m == n == l
 
 
 ####################################################################################################
