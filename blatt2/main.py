@@ -122,12 +122,23 @@ def compute_cholesky(M: np.ndarray) -> np.ndarray:
     - numpy.linalg.*
     """
 
-    # TODO check for symmetry and raise an exception of type ValueError
+    # check for symmetry and raise an exception of type ValueError
     (n, m) = M.shape
+    if not n == m:
+        raise ValueError
 
-    # TODO build the factorization and raise a ValueError in case of a non-positive definite input matrix
+    # build the factorization and raise a ValueError in case of a non-positive definite input matrix
 
     L = np.zeros((n, n))
+    for i in range(n):
+        for j in range(i + 1):
+            if i == j:
+                tmp = M[i, i] - np.sum(L[i, :j] ** 2)
+                if tmp < 0:
+                    raise ValueError
+                L[i, j] = np.sqrt(tmp)
+            else:
+                L[i, j] = (M[i, j] - np.sum(L[i, :j] * L[j, :j])) / L[j, j]
 
     return L
 
