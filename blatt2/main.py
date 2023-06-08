@@ -28,12 +28,25 @@ def gaussian_elimination(A: np.ndarray, b: np.ndarray, use_pivoting: bool = True
     - numpy.linalg.*
     """
     # Create copies of input matrix and vector to leave them unmodified
-    A = A.copy()
-    b = b.copy()
+    A: np.ndarray = A.copy()
+    b: np.ndarray = b.copy()
 
-    # TODO: Test if shape of matrix and vector is compatible and raise ValueError if not
+    # Test if shape of matrix and vector is compatible and raise ValueError if not
+    m, n = A.shape
+    l, = b.shape
+    if not m == n == l:
+        raise ValueError
 
-    # TODO: Perform gaussian elimination
+    # Perform gaussian elimination
+    for i in range(m):
+        max_row = np.argmax(abs(A[i:, i])) + i
+        A[[i, max_row], :] = A[[max_row, i], :]
+        b[[i, max_row]] = b[[max_row, i]]
+
+        for j in range(i+1, m):
+            f = A[j, i] / A[i, i]
+            A[j, i:] -= f * A[i, i:]
+            b[j] -= f * b[i]
 
     return A, b
 
