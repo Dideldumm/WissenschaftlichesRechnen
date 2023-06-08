@@ -80,12 +80,17 @@ def back_substitution(A: np.ndarray, b: np.ndarray) -> np.ndarray:
     if not __is_matrix_compatible_to_vector(A, b):
         raise ValueError
 
+    if not np.allclose(A, np.triu(A)):
+        raise ValueError
+
     # Initialize solution vector with proper size
     m, _ = A.shape
     x = np.zeros(m)
 
     # Run backsubstitution and fill solution vector, raise ValueError if no/infinite solutions exist
     for i in range(m - 1, -1, -1):
+        if A[i, i] == 0:
+            raise ValueError
         x[i] = (b[i] - np.dot(A[i, (i + 1):], x[(i + 1):])) / A[i, i]
 
     return x
