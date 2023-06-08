@@ -1,4 +1,3 @@
-
 import numpy as np
 import tomograph
 
@@ -93,12 +92,9 @@ def compute_cholesky(M: np.ndarray) -> np.ndarray:
     # TODO check for symmetry and raise an exception of type ValueError
     (n, m) = M.shape
 
-
-
     # TODO build the factorization and raise a ValueError in case of a non-positive definite input matrix
 
     L = np.zeros((n, n))
-
 
     return L
 
@@ -125,10 +121,8 @@ def solve_cholesky(L: np.ndarray, b: np.ndarray) -> np.ndarray:
     # TODO Check the input for validity, raising a ValueError if this is not the case
     (n, m) = L.shape
 
-
     # TODO Solve the system by forward- and backsubstitution
     x = np.zeros(m)
-
 
     return x
 
@@ -215,11 +209,10 @@ def compute_tomograph(n_shots: np.int64, n_rays: np.int64, n_grid: np.int64) -> 
 
 if __name__ == '__main__':
     # Compute tomographic image
-    n_shots = 32 # 128
-    n_rays = 32 # 128
+    n_shots = 32  # 128
+    n_rays = 32  # 128
     n_grid = 16  # 64
     tim = compute_tomograph(n_shots, n_rays, n_grid)
-
 
     print("All requested functions for the assignment have to be implemented in this file and uploaded to the "
           "server for the grading.\nTo test your implemented functions you can "

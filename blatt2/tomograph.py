@@ -1,8 +1,8 @@
-
 from lib import trace, grid_intersect
 import numpy as np
 
-def take_measurement( n_grid : np.int64, n_rays : np.int64, r_theta : np.float64) :
+
+def take_measurement(n_grid: np.int64, n_rays: np.int64, r_theta: np.float64):
     """
     Take a measurement with the tomograph from direction r_dir
 
@@ -30,21 +30,20 @@ def take_measurement( n_grid : np.int64, n_rays : np.int64, r_theta : np.float64
     r_dir = np.array([-cs, -sn])
 
     # compute start positions for rays
-    r_pos = np.zeros( (n_rays, 2))
-    for i, g in enumerate( np.linspace(-0.99, 0.99, n_rays)):
-        r_pos[i] = np.array([cs-sn*g, sn+cs*g])
+    r_pos = np.zeros((n_rays, 2))
+    for i, g in enumerate(np.linspace(-0.99, 0.99, n_rays)):
+        r_pos[i] = np.array([cs - sn * g, sn + cs * g])
     else:
         r_pos[0] = np.array([cs, sn])
 
     # compute measures intensities for each ray
-    intensities = np.zeros( n_rays)
-    for i, rs in enumerate(r_pos) :
-       intensities[i] = trace( rs, r_dir)
+    intensities = np.zeros(n_rays)
+    for i, rs in enumerate(r_pos):
+        intensities[i] = trace(rs, r_dir)
     # take exponential fall off into account
     intensities = np.log(1.0 / intensities)
 
     # compute traversal distance in each grid cell
-    idx, idx_isect, dt = grid_intersect( n_grid, r_pos, r_dir)
+    idx, idx_isect, dt = grid_intersect(n_grid, r_pos, r_dir)
 
     return intensities, idx, idx_isect, dt
-
