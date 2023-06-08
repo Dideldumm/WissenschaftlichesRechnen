@@ -39,11 +39,15 @@ def gaussian_elimination(A: np.ndarray, b: np.ndarray, use_pivoting: bool = True
 
     # Perform gaussian elimination
     for i in range(m):
-        max_row = np.argmax(abs(A[i:, i])) + i
-        A[[i, max_row], :] = A[[max_row, i], :]
-        b[[i, max_row]] = b[[max_row, i]]
+        if use_pivoting:
+            max_row = np.argmax(abs(A[i:, i])) + i
+            A[[i, max_row], :] = A[[max_row, i], :]
+            b[[i, max_row]] = b[[max_row, i]]
+            # https://stackoverflow.com/questions/54069863/swap-two-rows-in-a-numpy-array-in-python
 
         for j in range(i+1, m):
+            if A[i, i] == 0:
+                raise ValueError
             f = A[j, i] / A[i, i]
             A[j, i:] -= f * A[i, i:]
             b[j] -= f * b[i]
