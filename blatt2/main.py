@@ -162,11 +162,22 @@ def solve_cholesky(L: np.ndarray, b: np.ndarray) -> np.ndarray:
     - numpy.linalg.*
     """
 
-    # TODO Check the input for validity, raising a ValueError if this is not the case
+    # Check the input for validity, raising a ValueError if this is not the case
     (n, m) = L.shape
+    if not n == m:
+        raise ValueError
 
-    # TODO Solve the system by forward- and backsubstitution
+    if not np.allclose(L, np.tril(L)):
+        raise ValueError
+
+    # Solve the system by forward- and backsubstitution
+    LT = L.transpose()
+    y = back_substitution(LT, b)
     x = np.zeros(m)
+    for i in range(m):
+        if L[i, i] == 0:
+            raise ValueError
+        x[i] = (y[i] - np.dot(L[i, :i], x[:i])) / L[i, i]
 
     return x
 
