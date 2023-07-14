@@ -68,17 +68,19 @@ class Tests(unittest.TestCase):
     def test_2_setup_data_matrix(self):
         self.setup_tests("setup_data_matrix")
         self.assertTrue(isinstance(self.D, np.ndarray))
-        self.assertTrue(self.D.shape[0] == len(self.imgs_train) and self.D.shape[1] == self.dim_x * self.dim_y == 11368)
+        self.assertTrue(self.D.shape[0] == len(self.imgs_train))
+        self.assertTrue(self.D.shape[1] == self.dim_x * self.dim_y == 11368)
 
     def test_3_calculate_pca(self):
         self.setup_tests("calculate_pca")
         # Test certain properties of the pca
-        self.assertTrue(
-            isinstance(self.pcs, np.ndarray) and isinstance(self.sv, np.ndarray) and isinstance(self.mean_data,
-                                                                                                np.ndarray))
+        self.assertTrue(isinstance(self.pcs, np.ndarray))
+        self.assertTrue(isinstance(self.sv, np.ndarray))
+        self.assertTrue(isinstance(self.mean_data, np.ndarray))
+
+        self.assertTrue(self.mean_data.shape[0] == 11368)
         self.assertTrue(self.pcs.shape[0] == len(self.imgs_train) == 150)
         self.assertTrue(self.pcs.shape[1] == self.dim_x * self.dim_y == 11368)
-        self.assertTrue(self.mean_data.shape[0] == 11368)
 
         # Visualize the eigenfaces/principal components
         visualize_eigenfaces(10, self.pcs, self.sv, self.dim_x, self.dim_y)

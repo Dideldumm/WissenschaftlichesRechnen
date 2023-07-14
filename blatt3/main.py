@@ -78,7 +78,7 @@ def load_images(path: str, file_ending: str = ".png") -> (list, int, int):
     # set dimensions according to first image in images
     dimension_x, dimension_y = images[0].shape
 
-    return images, dimension_x, dimension_y
+    return images, dimension_y, dimension_x
 
 
 def setup_data_matrix(images: list[np.ndarray]) -> np.ndarray:
@@ -92,7 +92,7 @@ def setup_data_matrix(images: list[np.ndarray]) -> np.ndarray:
     D: data matrix that contains the flattened images as rows
     """
     # initialize data matrix with proper size and data type
-    x, y = images[0].shape
+    y, x = images[0].shape
     z = len(images)
 
     # add flattened images to data matrix
@@ -102,7 +102,7 @@ def setup_data_matrix(images: list[np.ndarray]) -> np.ndarray:
     return D
 
 
-def calculate_pca(D: np.ndarray) -> (np.ndarray, np.ndarray, np.ndarray):
+def calculate_pca(data: np.ndarray) -> (np.ndarray, np.ndarray, np.ndarray):
     """
     Perform principal component analysis for given data matrix.
 
@@ -115,21 +115,23 @@ def calculate_pca(D: np.ndarray) -> (np.ndarray, np.ndarray, np.ndarray):
     mean_data: mean that was subtracted from data
     """
 
-    # TODO: subtract mean from data / center data at origin
-    mean_data = np.mean(D)
+    # subtract mean from data / center data at origin
+    mean_data = np.asarray([np.mean(pixel) for pixel in np.transpose(data)])
+    print(data.shape)
+    print(mean_data.shape)
+
+    m, data_size = data.shape
 
     # TODO: compute left and right singular vectors and singular values
-    # Useful functions: numpy.linalg.svd(..., full_matrices=False)
-    U, svals, Vh = np.linalg.svd(D, full_matrices=False)
-    svals = svals * np.eye(D.shape[0], D.shape[1])
-    print(f"svals={svals.shape}")
-    print(f"D={D.shape}")
-    # svals, pcs = [np.ones((1, 1))] * 2
-    print(f"V={np.transpose(Vh).shape}")
-    tmp = np.transpose(Vh)*np.linalg.pinv(svals)
-    tmp2 = tmp*np.transpose(U)
-    x = [tmp2 * b for b in D]
-    pcs = np.asarray(x)
+    pcs = np.eye(1)
+    U, svals, Vh = np.linalg.svd(data, full_matrices=False)
+    svals = np.array([svals]).T
+    svals = np.eye(data.shape[0], data.shape[1]) * svals
+
+    # tmp = np.transpose(Vh)*np.linalg.pinv(svals)
+    # tmp2 = tmp*np.transpose(U)
+    # x = [tmp2 * b for b in data]
+    # pcs = np.asarray(x)
 
     return pcs, svals, mean_data
 
@@ -240,14 +242,8 @@ if __name__ == '__main__':
 
     print('ev = ' + str(ev))
 
-    images, x, y = load_images("C:\\Users\\didel\\PycharmProjects\\WissenschaftlichesRechnen\\blatt3\\train")
-    D = setup_data_matrix(images)
-    pcs, svals, mean = calculate_pca(D)
-    lib.visualize_eigenfaces(10, pcs, svals, x, y)
-
-
-    # print("All requested functions for the assignment have to be implemented in this file and uploaded to the "
-    #       "server for the grading.\nTo test your implemented functions you can "
-    #       "implement/run tests in the file tests.py (> python3 -v test.py [Tests.<test_function>]).")
+    print("All requested functions for the assignment have to be implemented in this file and uploaded to the "
+          "server for the grading.\nTo test your implemented functions you can "
+          "implement/run tests in the file tests.py (> python3 -v test.py [Tests.<test_function>]).")
 
 
