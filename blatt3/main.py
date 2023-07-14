@@ -3,8 +3,6 @@ import os
 import matplotlib.image
 import numpy as np
 
-from blatt3 import lib
-
 
 ####################################################################################################
 # Exercise 1: Power Iteration
@@ -98,7 +96,7 @@ def setup_data_matrix(images: list[np.ndarray]) -> np.ndarray:
     # add flattened images to data matrix
     D = np.asarray([image.flatten() for image in images])
 
-    assert (D.shape == (z, x*y))
+    assert (D.shape == (z, x * y))
     return D
 
 
@@ -116,22 +114,19 @@ def calculate_pca(data: np.ndarray) -> (np.ndarray, np.ndarray, np.ndarray):
     """
 
     # subtract mean from data / center data at origin
-    mean_data = np.asarray([np.mean(pixel) for pixel in np.transpose(data)])
-    print(data.shape)
-    print(mean_data.shape)
+    mean_data = data - np.mean(data, axis=0)
 
     m, data_size = data.shape
 
     # TODO: compute left and right singular vectors and singular values
-    pcs = np.eye(1)
     U, svals, Vh = np.linalg.svd(data, full_matrices=False)
-    svals = np.array([svals]).T
-    svals = np.eye(data.shape[0], data.shape[1]) * svals
+    # svals = np.array([svals]).T
+    # svals = np.eye(m, data_size) * svals
 
     # tmp = np.transpose(Vh)*np.linalg.pinv(svals)
     # tmp2 = tmp*np.transpose(U)
-    # x = [tmp2 * b for b in data]
-    # pcs = np.asarray(x)
+    x = np.dot(mean_data, Vh.T)
+    pcs = np.asarray(x)
 
     return pcs, svals, mean_data
 
@@ -245,5 +240,3 @@ if __name__ == '__main__':
     print("All requested functions for the assignment have to be implemented in this file and uploaded to the "
           "server for the grading.\nTo test your implemented functions you can "
           "implement/run tests in the file tests.py (> python3 -v test.py [Tests.<test_function>]).")
-
-

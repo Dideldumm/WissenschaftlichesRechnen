@@ -60,16 +60,20 @@ class Tests(unittest.TestCase):
     def test_1_load_images(self):
         self.setup_tests("load_images")
         # check if images are loaded properly
-        self.assertTrue(len(self.imgs_train) == 150)
         self.assertTrue(isinstance(self.imgs_train[0], np.ndarray))
-        self.assertTrue(self.dim_x == self.imgs_train[0].shape[1] == 98)
-        self.assertTrue(self.dim_y == self.imgs_train[0].shape[0] == 116)
+
+        self.assertEqual(150, len(self.imgs_train))
+        self.assertEqual(98, self.dim_x)
+        self.assertEqual(98, self.imgs_train[0].shape[1])
+        self.assertEqual(116, self.dim_y)
+        self.assertEqual(116, self.imgs_train[0].shape[0])
 
     def test_2_setup_data_matrix(self):
         self.setup_tests("setup_data_matrix")
         self.assertTrue(isinstance(self.D, np.ndarray))
-        self.assertTrue(self.D.shape[0] == len(self.imgs_train))
-        self.assertTrue(self.D.shape[1] == self.dim_x * self.dim_y == 11368)
+
+        self.assertEqual((150, 11368), self.D.shape)
+        self.assertEqual(11368, self.dim_x * self.dim_y)
 
     def test_3_calculate_pca(self):
         self.setup_tests("calculate_pca")
@@ -78,25 +82,28 @@ class Tests(unittest.TestCase):
         self.assertTrue(isinstance(self.sv, np.ndarray))
         self.assertTrue(isinstance(self.mean_data, np.ndarray))
 
-        self.assertTrue(self.mean_data.shape[0] == 11368)
-        self.assertTrue(self.pcs.shape[0] == len(self.imgs_train) == 150)
-        self.assertTrue(self.pcs.shape[1] == self.dim_x * self.dim_y == 11368)
+        self.assertEqual(150, self.mean_data.shape[0])
+
+        self.assertEqual(150, len(self.imgs_train))
+        self.assertEqual((150, 11368), self.pcs.shape)
+        self.assertEqual(11368, self.dim_x * self.dim_y)
 
         # Visualize the eigenfaces/principal components
         visualize_eigenfaces(10, self.pcs, self.sv, self.dim_x, self.dim_y)
 
     def test_4_accumulated_energy(self):
         self.setup_tests("accumulated_energy")
-        self.assertTrue(self.k > 0)
+        self.assertGreater(self.k, 0)
         plot_singular_values_and_energy(self.sv, self.k)
 
     def test_5_project_faces(self):
         self.setup_tests("project_faces")
-        self.assertTrue(self.coeffs_train.shape == (len(self.imgs_train), self.pcs.shape[0]))
+        self.assertEqual(self.coeffs_train.shape, (len(self.imgs_train), self.pcs.shape[0]))
 
     def test_6_identify_faces(self):
         self.setup_tests("identify_faces")
-        self.assertTrue(self.scores.shape == (self.coeffs_train.shape[0], self.coeffs_test.shape[0]) != (1, 1))
+        self.assertEqual(self.scores.shape, (self.coeffs_train.shape[0], self.coeffs_test.shape[0]))
+        self.assertNotEqual((1, 1), self.scores.shape)
 
         plot_identified_faces(self.scores, self.imgs_train, self.imgs_test, self.pcs, self.coeffs_test, self.mean_data)
 
