@@ -1,6 +1,9 @@
 import os
+
+import matplotlib.image
 import numpy as np
-import matplotlib as mpl
+
+from blatt3 import lib
 
 
 ####################################################################################################
@@ -48,7 +51,7 @@ def power_iteration(M: np.ndarray, epsilon: float = -1.0) -> (np.ndarray, list):
 ####################################################################################################
 # Exercise 2: Eigenfaces
 
-def load_images(path: str, file_ending: str=".png") -> (list, int, int):
+def load_images(path: str, file_ending: str = ".png") -> (list, int, int):
     """
     Load all images in path with matplotlib that have given file_ending
 
@@ -62,20 +65,23 @@ def load_images(path: str, file_ending: str=".png") -> (list, int, int):
     dimension_y: size of images in y direction
     """
 
-    images = []
+    image_list = list(filter(lambda file: file.endswith(file_ending), os.listdir(path)))
+    # sort the images according to their filename
+    image_list.sort()
 
-    # TODO read each image in path as numpy.ndarray and append to images
+    print(image_list)
+
+    # read each image in path as numpy.ndarray and append to images
     # Useful functions: matplotlib.image.imread(), numpy.asarray()
+    images = [np.asarray(matplotlib.image.imread(path + "\\" + image, file_ending)) for image in image_list]
 
-
-    # TODO set dimensions according to first image in images
-    dimension_y = 0
-    dimension_x = 0
+    # set dimensions according to first image in images
+    dimension_x, dimension_y = images[0].shape
 
     return images, dimension_x, dimension_y
 
 
-def setup_data_matrix(images: list) -> np.ndarray:
+def setup_data_matrix(images: list[np.ndarray]) -> np.ndarray:
     """
     Create data matrix out of list of 2D data sets.
 
@@ -85,12 +91,14 @@ def setup_data_matrix(images: list) -> np.ndarray:
     Return:
     D: data matrix that contains the flattened images as rows
     """
-    # TODO: initialize data matrix with proper size and data type
-    D = np.zeros((0, 0))
+    # initialize data matrix with proper size and data type
+    x, y = images[0].shape
+    z = len(images)
 
-    # TODO: add flattened images to data matrix
+    # add flattened images to data matrix
+    D = np.asarray([image.flatten() for image in images])
 
-
+    assert (D.shape == (z, x*y))
     return D
 
 
@@ -108,11 +116,20 @@ def calculate_pca(D: np.ndarray) -> (np.ndarray, np.ndarray, np.ndarray):
     """
 
     # TODO: subtract mean from data / center data at origin
-    mean_data = np.zeros((1, 1))
+    mean_data = np.mean(D)
 
     # TODO: compute left and right singular vectors and singular values
     # Useful functions: numpy.linalg.svd(..., full_matrices=False)
-    svals, pcs = [np.ones((1, 1))] * 2
+    U, svals, Vh = np.linalg.svd(D, full_matrices=False)
+    svals = svals * np.eye(D.shape[0], D.shape[1])
+    print(f"svals={svals.shape}")
+    print(f"D={D.shape}")
+    # svals, pcs = [np.ones((1, 1))] * 2
+    print(f"V={np.transpose(Vh).shape}")
+    tmp = np.transpose(Vh)*np.linalg.pinv(svals)
+    tmp2 = tmp*np.transpose(U)
+    x = [tmp2 * b for b in D]
+    pcs = np.asarray(x)
 
     return pcs, svals, mean_data
 
@@ -156,12 +173,11 @@ def project_faces(pcs: np.ndarray, images: list, mean_data: np.ndarray) -> np.nd
 
     # TODO: iterate over images and project each normalized image into principal component basis
 
-
     return coefficients
 
 
 def identify_faces(coeffs_train: np.ndarray, pcs: np.ndarray, mean_data: np.ndarray, path_test: str) -> (
-np.ndarray, list, np.ndarray):
+        np.ndarray, list, np.ndarray):
     """
     Perform face recognition for test images assumed to contain faces.
 
@@ -184,51 +200,54 @@ np.ndarray, list, np.ndarray):
     # TODO: project test data set into eigenbasis
     coeffs_test = np.zeros(coeffs_train.shape)
 
-
     # TODO: Initialize scores matrix with proper size
     scores = np.zeros((1, 1))
     # TODO: Iterate over all images and calculate pairwise correlation
-
 
     return scores, imgs_test, coeffs_test
 
 
 if __name__ == '__main__':
-
-    A = np.random.randn( 7, 7)
+    A = np.random.randn(7, 7)
     A = A.transpose().dot(A)
-    L,U = np.linalg.eig( A)
-    L[1] = L[0] - 10**-3
+    L, U = np.linalg.eig(A)
+    L[1] = L[0] - 10 ** -3
     A = U.dot(np.diag(L)).dot(U.transpose())
-    print( )
+    print()
     np.set_printoptions(precision=16)
-    print( A.flatten())
+    print(A.flatten())
 
-    A = np.array( [ 18.2112344794043359,   0.7559886314903312,  7.2437569750169502,
-                    -13.8991061752623271,   4.8768689715057691,  -1.318055436971276,
-                    -6.7829844205260148,   0.7559886314903312,   7.9204801042364448,
-                     1.5378938590357767,   7.1775560914639325,   2.8536549530686015,
-                     1.9998683983340397,  -5.9532930598376685,   7.2437569750169502,
-                     1.5378938590357767,   9.841906218619128,   0.5841092845624152,
-                     6.7510103134860797,   4.6111951240722888,  -8.9825300821798191,
-                    -13.8991061752623271,   7.1775560914639334,   0.5841092845624152,
-                     24.2028041177043818,   0.8180957104689988,   6.6087248591945729,
-                    -4.1573996873552073,   4.8768689715057691,   2.8536549530686015,
-                     6.7510103134860806,   0.8180957104689979,   7.0366782892027206,
-                     5.4944303652858073,  -9.0773671527609796,  -1.318055436971276,
-                     1.9998683983340397,   4.6111951240722888,   6.608724859194572,
-                     5.4944303652858073,   8.1889694453300805,  -7.1176432086570651,
-                    -6.7829844205260148,  -5.9532930598376685,  -8.9825300821798191,
-                    -4.1573996873552046,  -9.0773671527609796,  -7.1176432086570633,
-                    13.664209790087753 ])
-    A = A.reshape( (7,7))
+    A = np.array([18.2112344794043359, 0.7559886314903312, 7.2437569750169502,
+                  -13.8991061752623271, 4.8768689715057691, -1.318055436971276,
+                  -6.7829844205260148, 0.7559886314903312, 7.9204801042364448,
+                  1.5378938590357767, 7.1775560914639325, 2.8536549530686015,
+                  1.9998683983340397, -5.9532930598376685, 7.2437569750169502,
+                  1.5378938590357767, 9.841906218619128, 0.5841092845624152,
+                  6.7510103134860797, 4.6111951240722888, -8.9825300821798191,
+                  -13.8991061752623271, 7.1775560914639334, 0.5841092845624152,
+                  24.2028041177043818, 0.8180957104689988, 6.6087248591945729,
+                  -4.1573996873552073, 4.8768689715057691, 2.8536549530686015,
+                  6.7510103134860806, 0.8180957104689979, 7.0366782892027206,
+                  5.4944303652858073, -9.0773671527609796, -1.318055436971276,
+                  1.9998683983340397, 4.6111951240722888, 6.608724859194572,
+                  5.4944303652858073, 8.1889694453300805, -7.1176432086570651,
+                  -6.7829844205260148, -5.9532930598376685, -8.9825300821798191,
+                  -4.1573996873552046, -9.0773671527609796, -7.1176432086570633,
+                  13.664209790087753])
+    A = A.reshape((7, 7))
 
-    ev, res = power_iteration( A)
+    ev, res = power_iteration(A)
+
+    print('ev = ' + str(ev))
+
+    images, x, y = load_images("C:\\Users\\didel\\PycharmProjects\\WissenschaftlichesRechnen\\blatt3\\train")
+    D = setup_data_matrix(images)
+    pcs, svals, mean = calculate_pca(D)
+    lib.visualize_eigenfaces(10, pcs, svals, x, y)
 
 
+    # print("All requested functions for the assignment have to be implemented in this file and uploaded to the "
+    #       "server for the grading.\nTo test your implemented functions you can "
+    #       "implement/run tests in the file tests.py (> python3 -v test.py [Tests.<test_function>]).")
 
-    print( 'ev = ' + str(ev))
 
-    print("All requested functions for the assignment have to be implemented in this file and uploaded to the "
-          "server for the grading.\nTo test your implemented functions you can "
-          "implement/run tests in the file tests.py (> python3 -v test.py [Tests.<test_function>]).")
