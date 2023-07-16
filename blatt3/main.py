@@ -120,14 +120,15 @@ def calculate_pca(data: np.ndarray) -> (np.ndarray, np.ndarray, np.ndarray):
 
     # TODO: compute left and right singular vectors and singular values
     U, S, Vh = np.linalg.svd(mean_data.T, full_matrices=False)
-    one = np.diagflat(S)
-    two = np.zeros((m, data_size-m))
-    svals = np.vstack([np.diagflat(S), np.zeros((m, data_size-m))])
-
-    tmp = np.transpose(Vh)*np.linalg.pinv(svals)
-    tmp2 = tmp*np.transpose(U)
-    x = np.dot(mean_data, Vh.T)
-    pcs = np.asarray(x)
+    squared_s = np.diagflat(S)
+    missing_slice = np.zeros((m, data_size - m))
+    svals = np.c_[squared_s, missing_slice]
+    V = np.c_[np.transpose(Vh), missing_slice]
+    sigma_p = np.linalg.pinv(svals)
+    tmp = np.matmul(V, sigma_p)
+    tmp2 = np.matmul(tmp, np.transpose(U))
+    # x = [tmp2 * b for b in mean_data]
+    pcs = np.apply_along_axis(lambda row: np.matmul(tmp2, np.atleast_2d(row).T), 1, mean_data)
 
     return pcs, svals, mean_data
 
